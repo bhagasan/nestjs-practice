@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { User } from '../src/users/user.entity';
 
 describe('UsersController (e2e)', () => {
   let app: INestApplication;
@@ -23,7 +24,7 @@ describe('UsersController (e2e)', () => {
   let createdUserId: number;
 
   it('Create Role', async () => {
-    const res = await request(app.getHttpServer())
+    const res: { body: { id: number } } = await request(app.getHttpServer())
       .post('/roles')
       .send({ name: 'Test Role' })
       .expect(201);
@@ -31,11 +32,12 @@ describe('UsersController (e2e)', () => {
   });
 
   it('/users (POST)', async () => {
-    const res = await request(app.getHttpServer())
+    const res: { body: User } = await request(app.getHttpServer())
       .post('/users')
       .send({
         name: 'John Doe',
         email: 'john@example.com',
+        password: 'password123',
         roleId: createdRoleId,
       })
       .expect(201);
@@ -46,16 +48,18 @@ describe('UsersController (e2e)', () => {
   });
 
   it('/users (GET)', async () => {
-    const res = await request(app.getHttpServer()).get('/users').expect(200);
+    const res: { body: User[] } = await request(app.getHttpServer())
+      .get('/users')
+      .expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
     const user = res.body.find((u) => u.id === createdUserId);
     expect(user).toBeDefined();
-    expect(user.role).toBeDefined();
+    expect(user!.role).toBeDefined();
   });
 
   it('/users/:id (GET)', async () => {
-    const res = await request(app.getHttpServer())
+    const res: { body: User } = await request(app.getHttpServer())
       .get(`/users/${createdUserId}`)
       .expect(200);
 
@@ -64,7 +68,7 @@ describe('UsersController (e2e)', () => {
   });
 
   it('/users/:id (PATCH)', async () => {
-    const res = await request(app.getHttpServer())
+    const res: { body: User } = await request(app.getHttpServer())
       .patch(`/users/${createdUserId}`)
       .send({ name: 'Jane Doe' })
       .expect(200);

@@ -18,6 +18,9 @@ export class User {
   @Column({ length: 255 })
   email: string;
 
+  @Column({ length: 255 })
+  password: string;
+
   @Column()
   role_id: number;
 

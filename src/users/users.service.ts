@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,9 +14,11 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const newUser = this.usersRepository.create({
       name: createUserDto.name,
       email: createUserDto.email,
+      password: hashedPassword,
       role_id: createUserDto.roleId,
     });
     return this.usersRepository.save(newUser);
@@ -41,9 +44,15 @@ export class UsersService {
 
     const { roleId, ...updateData } = updateUserDto;
 
+    if (updateData.password && typeof updateData.password === 'string') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
     const updatedUser = this.usersRepository.create({
       ...user,
       ...updateData,
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       role_id: roleId !== undefined ? roleId : user.role_id,
     });
