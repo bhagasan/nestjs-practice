@@ -4,8 +4,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+import { RolesModule } from './roles/roles.module';
+
 @Module({
   imports: [
+    RolesModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -20,6 +23,7 @@ import { AppService } from './app.service';
         database: configService.get<string>('DB_NAME'),
         entities: [],
         synchronize: true,
+        autoLoadEntities: true,
       }),
       inject: [ConfigService],
     }),
